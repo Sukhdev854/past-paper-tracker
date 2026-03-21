@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { SignUpPage } from './components/SignUpPage';
 import { Dashboard } from './components/EnhancedDashboard';
 import { ProgressRecorder } from './components/ProgressRecorder';
