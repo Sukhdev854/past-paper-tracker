@@ -26,7 +26,7 @@ function App() {
       setUser(currentSession.user);
       setProfile(currentSession.profile);
       setProgress(currentSession.progress);
-      setTheme(currentSession.theme);
+setTheme(currentSession.theme || THEME_PRESETS[0]);
     }
   }, []);
 
