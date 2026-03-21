@@ -325,6 +325,38 @@ export const subjectsDatabase: SubjectData[] = [
       { code: '43', name: 'Problem Solving (A2)', maxMarks: 120 },
     ],
   },
+  {
+    name: 'Psychology',
+    code: '9990',
+    level: 'A Level',
+    components: [
+      { code: '11', name: 'Approaches, Issues and Debates (AS)', maxMarks: 60 },
+      { code: '12', name: 'Approaches, Issues and Debates (AS)', maxMarks: 60 },
+      { code: '13', name: 'Approaches, Issues and Debates (AS)', maxMarks: 60 },
+      { code: '21', name: 'Research Methods (AS)', maxMarks: 60 },
+      { code: '22', name: 'Research Methods (AS)', maxMarks: 60 },
+      { code: '23', name: 'Research Methods (AS)', maxMarks: 60 },
+      { code: '31', name: 'Specialist Choices (A2)', maxMarks: 60 },
+      { code: '32', name: 'Specialist Choices (A2)', maxMarks: 60 },
+      { code: '33', name: 'Specialist Choices (A2)', maxMarks: 60 },
+      { code: '41', name: 'Psychology: Applications (A2)', maxMarks: 90 },
+      { code: '42', name: 'Psychology: Applications (A2)', maxMarks: 90 },
+      { code: '43', name: 'Psychology: Applications (A2)', maxMarks: 90 },
+    ],
+  },
+  {
+    name: 'English - General Paper',
+    code: '8021',
+    level: 'A Level',
+    components: [
+      { code: '11', name: 'Essay', maxMarks: 50 },
+      { code: '12', name: 'Essay', maxMarks: 50 },
+      { code: '13', name: 'Essay', maxMarks: 50 },
+      { code: '21', name: 'Comprehension', maxMarks: 50 },
+      { code: '22', name: 'Comprehension', maxMarks: 50 },
+      { code: '23', name: 'Comprehension', maxMarks: 50 },
+    ],
+  },
 ];
 
 export function getSubjectsByLevel(level: 'IGCSE' | 'AS Level' | 'A Level'): SubjectData[] {
