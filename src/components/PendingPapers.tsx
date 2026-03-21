@@ -2,6 +2,7 @@ import { StudentProfile, ProgressEntry } from '../App';
 import { getSubjectByCode } from '../data/subjects';
 import { FileText, Download, CheckCircle, Circle, ExternalLink, Star } from 'lucide-react';
 import { ThemeConfig } from '../data/themes';
+import { motion } from 'motion/react';
 
 interface PendingPapersProps {
   profile: StudentProfile;
@@ -73,22 +74,23 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
     component: string,
     type: 'qp' | 'ms'
   ) => {
-    const level = profile.level === 'IGCSE' ? 'igcse' : 'a-level';
-    const sessionName =
-      session === 'm' ? 'march' : session === 's' ? 'may-june' : 'october-november';
-    const sess = session;
+    // Get subject name from code
+    const subjectData = getSubjectByCode(code);
+    if (!subjectData) return '#';
+    
+    // Format subject name for URL (lowercase with hyphens)
+    const subjectNameFormatted = subjectData.name.toLowerCase().replace(/\s+/g, '-').replace(/[()]/g, '');
+    
+    // Determine level prefix
+    const levelPrefix = profile.level === 'IGCSE' ? 'igcse' : 'as-and-a-level';
+    
+    // Session formatting
+    const sessionName = session === 'm' ? 'march' : session === 's' ? 'may-june' : 'oct-nov';
+    const sessionCode = session === 'm' ? 'm' : session === 's' ? 's' : 'w';
     const yy = String(year).slice(-2);
     
-    // For Feb/March session (m), component codes typically end with 2 digits instead of 3
-    // For example: 12 instead of 13 for other sessions
-    const formattedComponent = session === 'm' && component.length === 2 
-      ? component 
-      : session === 'm' && component.length > 2
-      ? component.slice(0, 2)
-      : component;
-    
-    // Format: https://pastpapers.co/caie/{level}/{subject}-{code}/{year}-{session}/{code}_{sess}{yy}_{qp/ms}_{paper}.pdf
-    return `https://pastpapers.co/caie/${level}/${code}/${year}-${sessionName}/${code}_${sess}${yy}_${type}_${formattedComponent}.pdf`;
+    // Format: https://pastpapers.papacambridge.com/viewer/caie/{level}-{subject}-{code}/{year}-{session}/{code}-{session}{yy}-{type}-{component}-pdf
+    return `https://pastpapers.papacambridge.com/viewer/caie/${levelPrefix}-${subjectNameFormatted}-${code}/${year}-${sessionName}/${code}-${sessionCode}${yy}-${type}-${component}-pdf`;
   };
 
   const getSessionLabel = (session: string) => {
@@ -117,7 +119,13 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          whileHover={{ scale: 1.05, y: -5 }}
+          className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-lg"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-indigo-100 text-sm font-medium">Total Papers</p>
@@ -125,9 +133,15 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
             </div>
             <FileText className="w-12 h-12 text-indigo-200" />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-gradient-to-br from-green-500 to-teal-600 rounded-xl p-6 text-white shadow-lg">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
+          whileHover={{ scale: 1.05, y: -5 }}
+          className="bg-gradient-to-br from-green-500 to-teal-600 rounded-xl p-6 text-white shadow-lg"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-green-100 text-sm font-medium">Completed</p>
@@ -135,9 +149,15 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
             </div>
             <CheckCircle className="w-12 h-12 text-green-200" />
           </div>
-        </div>
+        </motion.div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-6 text-white shadow-lg">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.3 }}
+          whileHover={{ scale: 1.05, y: -5 }}
+          className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl p-6 text-white shadow-lg"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-orange-100 text-sm font-medium">Pending</p>
@@ -145,7 +165,7 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
             </div>
             <Circle className="w-12 h-12 text-orange-200" />
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Community Rating Banner */}
