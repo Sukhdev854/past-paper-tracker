@@ -2,7 +2,7 @@ import { StudentProfile, ProgressEntry } from '../App';
 import { getSubjectByCode } from '../data/subjects';
 import { FileText, Download, CheckCircle, Circle, ExternalLink, Star } from 'lucide-react';
 import { ThemeConfig } from '../data/themes';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 interface PendingPapersProps {
   profile: StudentProfile;
