@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { SignUpPage } from './components/SignUpPage';
 import { Dashboard } from './components/EnhancedDashboard';
 import { ProgressRecorder } from './components/ProgressRecorder';
@@ -10,103 +11,66 @@ import { Menu, Home, PlusCircle, Settings, TrendingUp, FileText, Target, LogOut 
 import { THEME_PRESETS, ThemeConfig, getThemeClasses, FONT_OPTIONS } from './data/themes';
 import { getCurrentSession, signOut, AuthSession } from './utils/localAuth';
 
-type Page = 'auth' | 'signup' | 'dashboard' | 'progress' | 'settings' | 'pending' | 'predicted';
+function App() {
+  const [currentPage, setCurrentPage] = useState<'auth' | 'signup' | 'dashboard' | 'progress' | 'settings' | 'pending' | 'predicted'>('auth');
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [progress, setProgress] = useState<Progress[]>([]);
+  const [theme, setTheme] = useState<ThemeConfig>(THEME_PRESETS[0]);
+  const [session, setSession] = useState<AuthSession | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
-export interface StudentProfile {
-  name: string;
-  level: 'IGCSE' | 'AS Level' | 'A Level';
-  subjects: SelectedSubject[];
-  targetGrade: string;
-  yearsRange: { from: number; to: number };
-}
-
-export interface SelectedSubject {
-  name: string;
-  code: string;
-  components: string[];
-  yearsRange: { from: number; to: number };
-}
-
-export interface ProgressEntry {
-  id: string;
-  subjectCode: string;
-  component: string;
-  year: number;
-  session: string;
-  score: number;
-  maxScore: number;
-  date: string;
-  status?: 'done' | 'in-progress' | 'to-mark' | 'to-review' | 'not-started';
-  difficulty?: 1 | 2 | 3 | 4 | 5; // 1 = very easy, 5 = very hard
-}
-
-export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('auth');
-  const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [progress, setProgress] = useState<ProgressEntry[]>([]);
-  const [theme, setTheme] = useState<ThemeConfig>(THEME_PRESETS.default);
-  const [user, setUser] = useState<any>(null);
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Check for existing session
   useEffect(() => {
-    const checkSession = () => {
-      const currentSession = getCurrentSession();
-      if (currentSession) {
-        setUser({ id: currentSession.userId, username: currentSession.username });
-        setSession(currentSession);
-        
-        // Load user data from localStorage
-        loadUserData(currentSession.userId);
-        setCurrentPage('dashboard');
-      }
-      setLoading(false);
-    };
-    checkSession();
+    const currentSession = getCurrentSession();
+    if (currentSession) {
+      setSession(currentSession);
+      setUser(currentSession.user);
+      setProfile(currentSession.profile);
+      setProgress(currentSession.progress);
+      setTheme(currentSession.theme);
+    }
   }, []);
 
-  const loadUserData = (userId: string) => {
-    try {
-      // Load profile from localStorage (scoped to user)
-      const savedProfile = localStorage.getItem(`prepflow_profile_${userId}`);
-      if (savedProfile) {
-        setProfile(JSON.parse(savedProfile));
-        setCurrentPage('dashboard');
-      } else {
-        setCurrentPage('signup');
-      }
-
-      // Load progress from localStorage (scoped to user)
-      const savedProgress = localStorage.getItem(`prepflow_progress_${userId}`);
-      if (savedProgress) {
-        setProgress(JSON.parse(savedProgress));
-      }
-
-      // Load theme from localStorage (themes are still local preference)
-      const savedTheme = localStorage.getItem('appTheme');
-      if (savedTheme) {
-        setTheme(JSON.parse(savedTheme));
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
-    }
+  const handleAuthSuccess = (authSession: AuthSession) => {
+    setSession(authSession);
+    setUser(authSession.user);
+    setProfile(authSession.profile);
+    setProgress(authSession.progress);
+    setTheme(authSession.theme);
+    setCurrentPage('dashboard');
   };
 
-  const handleAuthSuccess = (authSession: AuthSession) => {
-    setUser({ id: authSession.userId, username: authSession.username });
+  const handleSignUp = (authSession: AuthSession) => {
     setSession(authSession);
-    
-    // Load user data
-    loadUserData(authSession.userId);
+    setUser(authSession.user);
+    setProfile(authSession.profile);
+    setProgress(authSession.progress);
+    setTheme(authSession.theme);
+    setCurrentPage('dashboard');
+  };
+
+  const handleAddProgress = (newProgress: Progress) => {
+    setProgress([...progress, newProgress]);
+  };
+
+  const handleUpdateProgress = (updatedProgress: Progress) => {
+    setProgress(progress.map(p => p.id === updatedProgress.id ? updatedProgress : p));
+  };
+
+  const handleUpdateProfile = (updatedProfile: Profile) => {
+    setProfile(updatedProfile);
+  };
+
+  const handleUpdateTheme = (updatedTheme: ThemeConfig) => {
+    setTheme(updatedTheme);
   };
 
   const handleLogout = () => {
     signOut();
-    setUser(null);
     setSession(null);
+    setUser(null);
     setProfile(null);
     setProgress([]);
+    setTheme(THEME_PRESETS[0]);
     setCurrentPage('auth');
   };
 
@@ -128,202 +92,146 @@ export default function App() {
     }
   }, [theme.font]);
 
-  // Save data to localStorage (scoped to user)
+  // Add Favicon
   useEffect(() => {
-    if (profile && user) {
-      localStorage.setItem(`prepflow_profile_${user.id}`, JSON.stringify(profile));
+    // Create SVG favicon
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <defs>
+          <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+            <stop offset="50%" style="stop-color:#a855f7;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        <rect width="100" height="100" rx="20" fill="url(#grad)"/>
+        <path d="M30 70 L45 40 L60 55 L75 30" stroke="white" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="30" cy="70" r="5" fill="white"/>
+        <circle cx="45" cy="40" r="5" fill="white"/>
+        <circle cx="60" cy="55" r="5" fill="white"/>
+        <circle cx="75" cy="30" r="5" fill="white"/>
+      </svg>
+    `;
+    
+    const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+    if (favicon) {
+      favicon.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    } else {
+      const newFavicon = document.createElement('link');
+      newFavicon.rel = 'icon';
+      newFavicon.type = 'image/svg+xml';
+      newFavicon.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+      document.head.appendChild(newFavicon);
     }
-  }, [profile, user]);
-
-  useEffect(() => {
-    if (user && progress.length > 0) {
-      localStorage.setItem(`prepflow_progress_${user.id}`, JSON.stringify(progress));
-    }
-  }, [progress, user]);
-  
-  useEffect(() => {
-    localStorage.setItem('appTheme', JSON.stringify(theme));
-  }, [theme]);
-
-  const handleSignUp = (newProfile: StudentProfile) => {
-    setProfile(newProfile);
-    if (user) {
-      localStorage.setItem(`prepflow_profile_${user.id}`, JSON.stringify(newProfile));
-    }
-    setCurrentPage('dashboard');
-  };
-
-  const handleAddProgress = (entry: ProgressEntry) => {
-    const newProgress = [...progress, entry];
-    setProgress(newProgress);
-    if (user) {
-      localStorage.setItem(`prepflow_progress_${user.id}`, JSON.stringify(newProgress));
-    }
-  };
-
-  const handleUpdateProgress = (entries: ProgressEntry[]) => {
-    setProgress(entries);
-    if (user) {
-      localStorage.setItem(`prepflow_progress_${user.id}`, JSON.stringify(entries));
-    }
-  };
-
-  const handleUpdateProfile = (newProfile: StudentProfile) => {
-    setProfile(newProfile);
-    if (user) {
-      localStorage.setItem(`prepflow_profile_${user.id}`, JSON.stringify(newProfile));
-    }
-  };
-  
-  const handleUpdateTheme = (newTheme: ThemeConfig) => {
-    setTheme(newTheme);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-2xl mb-4">
-            <TrendingUp className="w-12 h-12 text-indigo-600" />
-          </div>
-          <h1 className="text-2xl font-bold">Loading PrepFlow...</h1>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile && currentPage !== 'signup' && currentPage !== 'auth') {
-    setCurrentPage('signup');
-  }
-  
-  const isDarkTheme = theme.colors.background.includes('gray-9') || theme.colors.background.includes('black');
-  const themeClasses = getThemeClasses(theme);
-  const bgClass = theme.colors.background.startsWith('gradient') ? `bg-${theme.colors.background}` : `bg-${theme.colors.background}`;
+    
+    // Also set the title
+    document.title = 'PrepFlow - Track Your Past Papers Progress';
+  }, []);
 
   return (
-    <div className={`min-h-screen ${bgClass} ${themeClasses}`}>
-      {profile && (
-        <nav className={`${theme.colors.cardBg === 'white' || theme.colors.cardBg === 'gray-50' ? 'bg-white/80' : 'bg-gray-800/80'} backdrop-blur-md border-b ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'} sticky top-0 z-50 ${theme.effects.shadows ? 'shadow-sm' : ''}`}>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                  <TrendingUp className={`w-6 h-6 text-white ${theme.effects.glow ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''}`} />
-                </div>
-                <div>
-                  <h1 className={`text-xl font-bold text-${theme.colors.cardText} ${theme.effects.glow ? 'drop-shadow-lg' : ''}`}>
-                    PrepFlow
-                  </h1>
-                  <p className="text-xs text-gray-500">Track. Practice. Excel.</p>
-                </div>
-              </div>
-              
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => setCurrentPage('dashboard')}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'dashboard'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
-                  }`}
-                >
-                  <Home className="w-4 h-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('progress')}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'progress'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
-                  }`}
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">Record Progress</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('settings')}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'settings'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
-                  }`}
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Settings</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('pending')}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'pending'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">Pending Papers</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('predicted')}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'predicted'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
-                  }`}
-                >
-                  <Target className="w-4 h-4" />
-                  <span className="hidden sm:inline">Predicted Grades</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      )}
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentPage === 'auth' && <AuthPage onAuthSuccess={handleAuthSuccess} />}
-        {currentPage === 'signup' && <SignUpPage onSignUp={handleSignUp} />}
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <AnimatePresence mode="wait">
+        {currentPage === 'auth' && (
+          <motion.div
+            key="auth"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <AuthPage onAuthSuccess={handleAuthSuccess} />
+          </motion.div>
+        )}
+        {currentPage === 'signup' && (
+          <motion.div
+            key="signup"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SignUpPage onSignUp={handleSignUp} />
+          </motion.div>
+        )}
         {currentPage === 'dashboard' && profile && (
-          <Dashboard profile={profile} progress={progress} theme={theme} />
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Dashboard profile={profile} progress={progress} theme={theme} />
+          </motion.div>
         )}
         {currentPage === 'progress' && profile && (
-          <ProgressRecorder
-            profile={profile}
-            progress={progress}
-            onAddProgress={handleAddProgress}
-            onUpdateProgress={handleUpdateProgress}
-            theme={theme}
-          />
+          <motion.div
+            key="progress"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ProgressRecorder
+              profile={profile}
+              progress={progress}
+              onAddProgress={handleAddProgress}
+              onUpdateProgress={handleUpdateProgress}
+              theme={theme}
+            />
+          </motion.div>
         )}
         {currentPage === 'settings' && profile && (
-          <SettingsPage 
-            profile={profile} 
-            onUpdateProfile={handleUpdateProfile}
-            theme={theme}
-            onUpdateTheme={handleUpdateTheme}
-            onLogout={handleLogout}
-            userName={user?.username || session?.username || profile.name}
-          />
+          <motion.div
+            key="settings"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <SettingsPage 
+              profile={profile} 
+              onUpdateProfile={handleUpdateProfile}
+              theme={theme}
+              onUpdateTheme={handleUpdateTheme}
+              onLogout={handleLogout}
+              userName={user?.username || session?.username || profile.name}
+            />
+          </motion.div>
         )}
         {currentPage === 'pending' && profile && (
-          <PendingPapers
-            profile={profile}
-            progress={progress}
-            theme={theme}
-          />
+          <motion.div
+            key="pending"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <PendingPapers
+              profile={profile}
+              progress={progress}
+              theme={theme}
+            />
+          </motion.div>
         )}
         {currentPage === 'predicted' && profile && (
-          <PredictedGrades
-            profile={profile}
-            progress={progress}
-            theme={theme}
-          />
+          <motion.div
+            key="predicted"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+          >
+            <PredictedGrades
+              profile={profile}
+              progress={progress}
+              theme={theme}
+            />
+          </motion.div>
         )}
-      </main>
-    </div>
+      </AnimatePresence>
+    </main>
   );
 }
+
+export default App;
