@@ -76,7 +76,7 @@ setTheme(currentSession.theme || THEME_PRESETS[0]);
 
   // Load Google Fonts
   useEffect(() => {
-    const fontOption = FONT_OPTIONS.find(f => f.value === theme.font);
+    const fontOption = FONT_OPTIONS.find(f => f.value === (theme?.font || THEME_PRESETS[0].font));
     if (fontOption && fontOption.import) {
       const linkId = 'google-font-link';
       let link = document.getElementById(linkId) as HTMLLinkElement;
