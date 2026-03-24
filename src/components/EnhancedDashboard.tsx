@@ -56,7 +56,7 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
 
     const totalPapers = subject.components.length * 3 * (subject.yearsRange.to - subject.yearsRange.from + 1);
     const completedPapers = subjectProgress.length;
-    const completionRate = totalPapers > 0 ? Math.min((completedPapers / totalPapers) * 100, 100) : 0;
+    const completionRate = totalPapers > 0 ? Math.min(completedPapers / totalPapers, 1) : 0;
 
     // Calculate average score
     const totalScore = subjectProgress.reduce((sum, p) => sum + p.score, 0);
