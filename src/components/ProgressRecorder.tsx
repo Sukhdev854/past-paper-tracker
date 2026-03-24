@@ -34,13 +34,20 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
     const component = subject.components.find(c => c.code === selectedComponent);
     if (!component) return;
 
+    // Validate score doesn't exceed maximum marks
+    const scoreValue = Number(score);
+    if (scoreValue > component.maxMarks) {
+      alert(`Score cannot exceed maximum marks (${component.maxMarks})`);
+      return;
+    }
+
     const newEntry: ProgressEntry = {
       id: `${Date.now()}-${Math.random()}`,
       subjectCode: selectedSubjectCode,
       component: selectedComponent,
       year: selectedYear,
       session: selectedSession,
-      score: Number(score),
+      score: scoreValue,
       maxScore: component.maxMarks,
       date: new Date().toISOString(),
       status: selectedStatus,
