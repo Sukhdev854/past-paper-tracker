@@ -65,8 +65,8 @@ export function signUp(username: string, password: string, name: string): { succ
     return { success: false, error: 'Password must be at least 6 characters' };
   }
 
-  // Validate name
-  if (name.trim().length < 2) {
+  // Validate name (only if provided - name can be empty during initial signup and set later)
+  if (name && name.trim().length < 2) {
     return { success: false, error: 'Name must be at least 2 characters' };
   }
 
