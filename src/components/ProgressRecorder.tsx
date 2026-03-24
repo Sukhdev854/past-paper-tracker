@@ -290,7 +290,7 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
                   </label>
                   <select
                     value={selectedDifficulty}
-                    onChange={(e) => setSelectedDifficulty(e.target.value as 1 | 2 | 3 | 4 | 5 | undefined)}
+                    onChange={(e) => setSelectedDifficulty(e.target.value ? Number(e.target.value) as 1 | 2 | 3 | 4 | 5 : undefined)}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   >
                     <option value="">Select difficulty...</option>
