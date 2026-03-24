@@ -56,19 +56,19 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
 
     const totalPapers = subject.components.length * 3 * (subject.yearsRange.to - subject.yearsRange.from + 1);
     const completedPapers = subjectProgress.length;
-    const completionRate = totalPapers > 0 ? completedPapers / totalPapers : 0;
+    const completionRate = totalPapers > 0 ? Math.min((completedPapers / totalPapers) * 100, 100) : 0;
 
     // Calculate average score
     const totalScore = subjectProgress.reduce((sum, p) => sum + p.score, 0);
     const totalMaxScore = subjectProgress.reduce((sum, p) => sum + p.maxScore, 0);
-    const averagePercentage = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
+    const averagePercentage = totalMaxScore > 0 ? Math.min((totalScore / totalMaxScore) * 100, 100) : 0;
 
     // Component-wise averages
     const componentStats = subject.components.map(compCode => {
       const compProgress = subjectProgress.filter(p => p.component === compCode);
       const compTotalScore = compProgress.reduce((sum, p) => sum + p.score, 0);
       const compTotalMaxScore = compProgress.reduce((sum, p) => sum + p.maxScore, 0);
-      const compAverage = compTotalMaxScore > 0 ? (compTotalScore / compTotalMaxScore) * 100 : 0;
+      const compAverage = compTotalMaxScore > 0 ? Math.min((compTotalScore / compTotalMaxScore) * 100, 100) : 0;
 
       return {
         component: compCode,
