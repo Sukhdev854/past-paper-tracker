@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Lock, ArrowRight, Sparkles, BookOpen, TrendingUp, AtSign, Loader } from 'lucide-react';
+import { User, Lock, ArrowRight, Sparkles, BookOpen, TrendingUp, AtSign, Loader, Eye, EyeOff } from 'lucide-react';
 import { signUp, signIn, AuthSession } from '../utils/localAuth';
 
 interface AuthPageProps {
@@ -10,7 +10,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const [isSignUp, setIsSignUp] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,7 +19,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
     setLoading(true);
     setError('');
 
-    const result = signUp(username, password, name);
+    const result = signUp(username, password, ''); // Empty name, will be set in SignUpPage
     
     if (result.success && result.session) {
       onAuthSuccess(result.session);
@@ -92,25 +92,6 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
           </div>
 
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn} className="space-y-4">
-            {isSignUp && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required={isSignUp}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    placeholder="Enter your full name"
-                  />
-                </div>
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Username
@@ -140,14 +121,25 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   placeholder="Enter your password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-5 h-5" />
+                  ) : (
+                    <Eye className="w-5 h-5" />
+                  )}
+                </button>
               </div>
               {isSignUp && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -212,6 +204,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
         {/* Footer */}
         <div className="text-center mt-8 text-white text-sm">
           <p>✨ Your data is stored locally on your device</p>
+          <p className="mt-2 text-indigo-100">Copyright 2026 Sukhdev Saxena</p>
         </div>
       </div>
     </div>
