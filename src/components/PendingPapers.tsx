@@ -101,7 +101,8 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
     if (ratedPapers.length === 0) return null;
     
     const avgRating = ratedPapers.reduce((sum, p) => sum + (p.difficulty || 0), 0) / ratedPapers.length;
-    return avgRating.toFixed(1);
+    // Ensure the rating is capped at 5.0
+    return Math.min(avgRating, 5).toFixed(1);
   };
 
   const communityRating = getCommunityRating();
