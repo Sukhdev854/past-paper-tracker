@@ -324,6 +324,13 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Footer */}
+      {currentPage !== 'auth' && (
+        <footer className="py-6 text-center text-sm text-gray-500">
+          <p>Copyright 2026 Sukhdev Saxena</p>
+        </footer>
+      )}
     </div>
   );
 }
