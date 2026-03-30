@@ -10,6 +10,11 @@ interface PendingPapersProps {
 }
 
 export function PendingPapers({ profile, progress, theme }: PendingPapersProps) {
+  // Check if dark theme
+  const isDarkTheme = theme?.colors.cardBg === 'gray-900' || theme?.colors.cardBg === 'gray-800' || theme?.colors.cardBg === 'gray-950';
+  const cardBg = theme?.colors.cardBg || 'white';
+  const cardText = theme?.colors.cardText || 'gray-900';
+
   // Generate all possible papers for each subject
   const getAllPapers = () => {
     const allPapers: {
@@ -182,7 +187,7 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
           }
 
           return (
-            <div key={subject.code} className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div key={subject.code} className={`bg-${cardBg} rounded-xl shadow-lg overflow-hidden`}>
               <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
                 <h3 className="text-xl font-semibold text-white">
                   {subject.name} ({subject.code})
@@ -196,12 +201,12 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b-2 border-gray-200">
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Component</th>
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Year</th>
-                        <th className="text-left py-3 px-4 font-semibold text-gray-700">Session</th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-700">Question Paper</th>
-                        <th className="text-center py-3 px-4 font-semibold text-gray-700">Mark Scheme</th>
+                      <tr className={`border-b-2 ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <th className={`text-left py-3 px-4 font-semibold ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>Component</th>
+                        <th className={`text-left py-3 px-4 font-semibold ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>Year</th>
+                        <th className={`text-left py-3 px-4 font-semibold ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>Session</th>
+                        <th className={`text-center py-3 px-4 font-semibold ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>Question Paper</th>
+                        <th className={`text-center py-3 px-4 font-semibold ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>Mark Scheme</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -213,13 +218,13 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
                         .map((paper, index) => (
                           <tr
                             key={`${paper.subjectCode}-${paper.component}-${paper.year}-${paper.session}`}
-                            className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                            className={`border-b ${isDarkTheme ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-100 hover:bg-gray-50'} transition-colors`}
                           >
-                            <td className="py-3 px-4 font-medium text-gray-900">
+                            <td className={`py-3 px-4 font-medium text-${cardText}`}>
                               {paper.component}
                             </td>
-                            <td className="py-3 px-4 text-gray-700">{paper.year}</td>
-                            <td className="py-3 px-4 text-gray-700">
+                            <td className={`py-3 px-4 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>{paper.year}</td>
+                            <td className={`py-3 px-4 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`}>
                               {getSessionLabel(paper.session)}
                             </td>
                             <td className="py-3 px-4 text-center">
@@ -270,10 +275,10 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
       </div>
 
       {pendingPapers.length === 0 && (
-        <div className="bg-white rounded-xl shadow-lg p-12 text-center">
+        <div className={`bg-${cardBg} rounded-xl shadow-lg p-12 text-center`}>
           <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">All Papers Completed!</h3>
-          <p className="text-gray-600">
+          <h3 className={`text-xl font-semibold text-${cardText} mb-2`}>All Papers Completed!</h3>
+          <p className={isDarkTheme ? 'text-gray-400' : 'text-gray-600'}>
             Congratulations! You've completed all the papers in your study plan.
           </p>
         </div>
