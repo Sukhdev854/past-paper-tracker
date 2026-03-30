@@ -39,6 +39,11 @@ const GRADE_THRESHOLDS = {
 };
 
 export function PredictedGrades({ profile, progress, theme }: PredictedGradesProps) {
+  // Check if dark theme
+  const isDarkTheme = theme?.colors.cardBg === 'gray-900' || theme?.colors.cardBg === 'gray-800' || theme?.colors.cardBg === 'gray-950';
+  const cardBg = theme?.colors.cardBg || 'white';
+  const cardText = theme?.colors.cardText || 'gray-900';
+
   // Calculate predicted grade for each subject
   const calculatePredictedGrade = (subjectCode: string) => {
     const subjectProgress = progress.filter(p => p.subjectCode === subjectCode && p.status === 'done');
@@ -139,7 +144,7 @@ export function PredictedGrades({ profile, progress, theme }: PredictedGradesPro
           const subjectData = getSubjectByCode(subject.code);
 
           return (
-            <div key={subject.code} className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div key={subject.code} className={`bg-${cardBg} rounded-xl shadow-lg overflow-hidden`}>
               {/* Header */}
               <div className={`bg-gradient-to-r ${getGradeColor(prediction.grade)} p-6 text-white`}>
                 <div className="flex items-center justify-between mb-2">
@@ -156,7 +161,7 @@ export function PredictedGrades({ profile, progress, theme }: PredictedGradesPro
               <div className="p-6 space-y-4">
                 {/* Confidence */}
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-700 font-medium">Prediction Confidence</span>
+                  <span className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} font-medium`}>Prediction Confidence</span>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getConfidenceBadge(prediction.confidence)}`}>
                     {prediction.confidence.toUpperCase()}
                   </span>
@@ -165,12 +170,12 @@ export function PredictedGrades({ profile, progress, theme }: PredictedGradesPro
                 {/* Progress */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-gray-700 font-medium">Papers Completed</span>
-                    <span className="text-gray-900 font-semibold">
+                    <span className={`${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} font-medium`}>Papers Completed</span>
+                    <span className={`text-${cardText} font-semibold`}>
                       {prediction.completedPapers} / {prediction.totalPapers}
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className={`w-full ${isDarkTheme ? 'bg-gray-700' : 'bg-gray-200'} rounded-full h-2`}>
                     <div
                       className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${(prediction.completedPapers / prediction.totalPapers) * 100}%` }}
@@ -180,7 +185,7 @@ export function PredictedGrades({ profile, progress, theme }: PredictedGradesPro
 
                 {/* Component Breakdown */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Component Averages</h4>
+                  <h4 className={`text-sm font-semibold ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Component Averages</h4>
                   <div className="space-y-2">
                     {subject.components.map(componentCode => {
                       const stats = getComponentStats(subject.code, componentCode);
@@ -188,12 +193,12 @@ export function PredictedGrades({ profile, progress, theme }: PredictedGradesPro
 
                       return (
                         <div key={componentCode} className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">{componentCode} - {component?.name}</span>
+                          <span className={isDarkTheme ? 'text-gray-400' : 'text-gray-600'}>{componentCode} - {component?.name}</span>
                           <div className="flex items-center gap-2">
-                            <span className="text-gray-900 font-medium">
+                            <span className={`text-${cardText} font-medium`}>
                               {stats.count > 0 ? `${stats.average.toFixed(1)}%` : 'N/A'}
                             </span>
-                            <span className="text-gray-500 text-xs">({stats.count} papers)</span>
+                            <span className={`${isDarkTheme ? 'text-gray-500' : 'text-gray-500'} text-xs`}>({stats.count} papers)</span>
                           </div>
                         </div>
                       );
