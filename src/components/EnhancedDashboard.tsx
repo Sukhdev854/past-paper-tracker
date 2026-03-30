@@ -20,6 +20,11 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [animationProgress, setAnimationProgress] = useState(0);
 
+  // Check if dark theme
+  const isDarkTheme = theme?.colors.cardBg === 'gray-900' || theme?.colors.cardBg === 'gray-800' || theme?.colors.cardBg === 'gray-950';
+  const cardBg = theme?.colors.cardBg || 'white';
+  const cardText = theme?.colors.cardText || 'gray-900';
+
   // Animate progress rings on mount
   useEffect(() => {
     const timer = setInterval(() => {
@@ -159,10 +164,10 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold text-gray-900">
+          <span className={`text-2xl font-bold text-${cardText}`}>
             {Math.round(displayPercentage)}%
           </span>
-          {label && <span className="text-xs text-gray-600 mt-1">{label}</span>}
+          {label && <span className={`text-xs ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'} mt-1`}>{label}</span>}
         </div>
       </div>
     );
@@ -186,10 +191,10 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
       </div>
 
       {/* Status Filter */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className={`bg-${cardBg} rounded-xl shadow-lg p-6`}>
         <div className="flex items-center gap-3 mb-4">
-          <Filter className="w-5 h-5 text-gray-700" />
-          <h3 className="text-lg font-semibold text-gray-900">Filter by Status</h3>
+          <Filter className={`w-5 h-5 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'}`} />
+          <h3 className={`text-lg font-semibold text-${cardText}`}>Filter by Status</h3>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
@@ -197,7 +202,7 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
             className={`px-4 py-2 rounded-lg border-2 transition-all ${
               statusFilter === 'all'
                 ? 'bg-indigo-600 text-white border-indigo-600'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-indigo-400'
+                : `bg-${cardBg} ${isDarkTheme ? 'text-gray-300 border-gray-600 hover:border-indigo-500' : 'text-gray-700 border-gray-300 hover:border-indigo-400'}`
             }`}
           >
             All Papers
@@ -209,7 +214,7 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
               className={`px-4 py-2 rounded-lg border-2 transition-all ${
                 statusFilter === status.value
                   ? `${status.bg} ${status.text} ${status.border}`
-                  : `bg-white text-gray-700 border-gray-300 hover:${status.border}`
+                  : `bg-${cardBg} ${isDarkTheme ? 'text-gray-300 border-gray-600' : 'text-gray-700 border-gray-300'} hover:${status.border}`
               }`}
             >
               {status.icon} {status.label}
@@ -251,8 +256,8 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
       )}
 
       {/* Completion Heat Track */}
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-xl font-bold text-gray-900 mb-4">Completion Heat Track</h3>
+      <div className={`bg-${cardBg} rounded-xl shadow-lg p-6`}>
+        <h3 className={`text-xl font-bold text-${cardText} mb-4`}>Completion Heat Track</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {profile.subjects.map(subject => {
             const stats = getSubjectStats(subject.code);
@@ -312,7 +317,7 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
         ];
 
         return (
-          <div key={subject.code} className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <div key={subject.code} className={`bg-${cardBg} rounded-xl shadow-lg overflow-hidden`}>
             {/* Subject Header */}
             <div className={`bg-gradient-to-r ${color.gradient} p-6 text-white`}>
               <div className="flex items-center justify-between mb-4">
@@ -385,7 +390,7 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
 
               {/* Component Chart */}
               <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Component Performance</h4>
+                <h4 className={`font-semibold text-${cardText} mb-3`}>Component Performance</h4>
                 <ResponsiveContainer width="100%" height={250}>
                   {chartType === 'bar' ? (
                     <BarChart data={chartData}>
@@ -411,13 +416,13 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
 
               {/* Component-wise Stats */}
               <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Component Details</h4>
+                <h4 className={`font-semibold text-${cardText} mb-3`}>Component Details</h4>
                 <div className="space-y-2">
                   {stats.componentStats.map(comp => (
-                    <div key={comp.component} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="font-medium text-gray-900">{comp.component}</span>
+                    <div key={comp.component} className={`flex items-center justify-between p-3 ${isDarkTheme ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}>
+                      <span className={`font-medium text-${cardText}`}>{comp.component}</span>
                       <div className="flex items-center gap-4">
-                        <span className="text-sm text-gray-600">{comp.count} papers</span>
+                        <span className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>{comp.count} papers</span>
                         <span className={`font-bold ${
                           comp.average >= 70 ? 'text-green-600' :
                           comp.average >= 50 ? 'text-yellow-600' :
@@ -433,7 +438,7 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
 
               {/* Status Breakdown */}
               <div>
-                <h4 className="font-semibold text-gray-900 mb-3">Status Breakdown</h4>
+                <h4 className={`font-semibold text-${cardText} mb-3`}>Status Breakdown</h4>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   {stats.statusBreakdown.map((item, index) => {
                     const statusInfo = STATUS_OPTIONS[index];
@@ -453,10 +458,10 @@ export function Dashboard({ profile, progress, theme }: DashboardProps) {
       })}
 
       {progress.length === 0 && (
-        <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-          <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Progress Yet</h3>
-          <p className="text-gray-600">
+        <div className={`bg-${cardBg} rounded-xl shadow-lg p-12 text-center`}>
+          <Award className={`w-16 h-16 ${isDarkTheme ? 'text-gray-600' : 'text-gray-400'} mx-auto mb-4`} />
+          <h3 className={`text-xl font-semibold text-${cardText} mb-2`}>No Progress Yet</h3>
+          <p className={isDarkTheme ? 'text-gray-400' : 'text-gray-600'}>
             Start recording your progress to see detailed analytics and insights!
           </p>
         </div>
