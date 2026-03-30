@@ -25,6 +25,11 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
   const [selectedDifficulty, setSelectedDifficulty] = useState<1 | 2 | 3 | 4 | 5 | undefined>(undefined);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
+  // Check if dark theme
+  const isDarkTheme = theme?.colors.cardBg === 'gray-900' || theme?.colors.cardBg === 'gray-800' || theme?.colors.cardBg === 'gray-950';
+  const cardBg = theme?.colors.cardBg || 'white';
+  const cardText = theme?.colors.cardText || 'gray-900';
+
   const handleAddEntry = () => {
     if (!selectedSubjectCode || !selectedComponent || !score) return;
 
@@ -103,13 +108,13 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
         </div>
         <div className="flex items-center gap-3">
           {/* View Mode Toggle */}
-          <div className="bg-white rounded-lg shadow-md p-1 flex gap-1">
+          <div className={`bg-${cardBg} rounded-lg shadow-md p-1 flex gap-1`}>
             <button
               onClick={() => setViewMode('list')}
               className={`px-4 py-2 rounded-md flex items-center gap-2 transition-all ${
                 viewMode === 'list'
                   ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
               }`}
               title="List View - For more detailed analysis"
             >
@@ -121,7 +126,7 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
               className={`px-4 py-2 rounded-md flex items-center gap-2 transition-all ${
                 viewMode === 'grid'
                   ? 'bg-indigo-600 text-white'
-                  : 'text-gray-600 hover:bg-gray-100'
+                  : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
               }`}
               title="Grid View - For faster data entry"
             >
@@ -156,6 +161,7 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
           progress={progress}
           onAddProgress={onAddProgress}
           onUpdateProgress={onUpdateProgress}
+          theme={theme}
         />
       )}
 
@@ -164,8 +170,8 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
         <>
           {/* Add Entry Form */}
           {showAddForm && (
-            <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-indigo-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">New Progress Entry</h2>
+            <div className={`bg-${cardBg} rounded-xl shadow-lg p-6 border-2 border-indigo-200`}>
+              <h2 className={`text-xl font-semibold text-${cardText} mb-4`}>New Progress Entry</h2>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
@@ -330,7 +336,7 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
               if (!subjectData) return null;
 
               return (
-                <div key={subject.code} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div key={subject.code} className={`bg-${cardBg} rounded-xl shadow-lg overflow-hidden`}>
                   <div className="bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-4">
                     <h3 className="text-xl font-semibold text-white">
                       {subject.name} ({subject.code})
@@ -342,7 +348,7 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
 
                   <div className="p-6">
                     {subjectProgress.length === 0 ? (
-                      <p className="text-gray-500 text-center py-8">
+                      <p className={`${isDarkTheme ? 'text-gray-400' : 'text-gray-500'} text-center py-8`}>
                         No progress recorded yet. Start adding your completed papers!
                       </p>
                     ) : (
@@ -354,14 +360,14 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
                             return (
                               <div
                                 key={entry.id}
-                                className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                className={`flex items-center justify-between p-4 ${isDarkTheme ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-50 hover:bg-gray-100'} rounded-lg transition-colors`}
                               >
                                 <div className="flex-1">
                                   <div className="flex items-center gap-3">
-                                    <span className="font-semibold text-gray-900">
+                                    <span className={`font-semibold text-${cardText}`}>
                                       Paper {entry.component}
                                     </span>
-                                    <span className="text-gray-500">
+                                    <span className={isDarkTheme ? 'text-gray-400' : 'text-gray-500'}>
                                       {entry.year}/{entry.session}
                                     </span>
                                     <span className={`text-sm font-medium ${
@@ -372,7 +378,7 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
                                       {entry.score}/{entry.maxScore} ({percentage}%)
                                     </span>
                                   </div>
-                                  <p className="text-sm text-gray-500 mt-1">
+                                  <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'} mt-1`}>
                                     Completed on {new Date(entry.date).toLocaleDateString()}
                                   </p>
                                 </div>
@@ -394,12 +400,12 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
           </div>
 
           {progress.length === 0 && !showAddForm && (
-            <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className={`bg-${cardBg} rounded-xl shadow-lg p-12 text-center`}>
+              <div className={`w-16 h-16 ${isDarkTheme ? 'bg-indigo-900' : 'bg-indigo-100'} rounded-full flex items-center justify-center mx-auto mb-4`}>
                 <Plus className="w-8 h-8 text-indigo-600" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Progress Yet</h3>
-              <p className="text-gray-600 mb-6">Start tracking your past papers by adding your first entry</p>
+              <h3 className={`text-xl font-semibold text-${cardText} mb-2`}>No Progress Yet</h3>
+              <p className={`${isDarkTheme ? 'text-gray-400' : 'text-gray-600'} mb-6`}>Start tracking your past papers by adding your first entry</p>
               <button
                 onClick={() => setShowAddForm(true)}
                 className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
