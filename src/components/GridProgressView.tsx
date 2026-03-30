@@ -2,17 +2,24 @@ import { useState } from 'react';
 import { StudentProfile, ProgressEntry } from '../App';
 import { getSubjectByCode } from '../data/subjects';
 import { Check, X } from 'lucide-react';
+import { ThemeConfig } from '../data/themes';
 
 interface GridProgressViewProps {
   profile: StudentProfile;
   progress: ProgressEntry[];
   onAddProgress: (entry: ProgressEntry) => void;
   onUpdateProgress: (entries: ProgressEntry[]) => void;
+  theme?: ThemeConfig;
 }
 
-export function GridProgressView({ profile, progress, onAddProgress, onUpdateProgress }: GridProgressViewProps) {
+export function GridProgressView({ profile, progress, onAddProgress, onUpdateProgress, theme }: GridProgressViewProps) {
   const [editingCell, setEditingCell] = useState<string | null>(null);
   const [scoreInput, setScoreInput] = useState('');
+
+  // Check if dark theme
+  const isDarkTheme = theme?.colors.cardBg === 'gray-900' || theme?.colors.cardBg === 'gray-800' || theme?.colors.cardBg === 'gray-950';
+  const cardBg = theme?.colors.cardBg || 'white';
+  const cardText = theme?.colors.cardText || 'gray-900';
 
   // Create rows for each subject-component combination with their specific year ranges
   const rows = profile.subjects.flatMap(subject => {
@@ -144,9 +151,9 @@ export function GridProgressView({ profile, progress, onAddProgress, onUpdatePro
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6 overflow-auto">
-      <h2 className="text-xl font-semibold text-gray-900 mb-4">Grid View</h2>
-      <p className="text-sm text-gray-600 mb-4">
+    <div className={`bg-${cardBg} rounded-xl shadow-lg p-6 overflow-auto`}>
+      <h2 className={`text-xl font-semibold text-${cardText} mb-4`}>Grid View</h2>
+      <p className={`text-sm ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
         Click a checkbox to mark a paper as completed and enter your score. Click again to remove.
       </p>
 
@@ -154,19 +161,19 @@ export function GridProgressView({ profile, progress, onAddProgress, onUpdatePro
         <table className="w-full border-collapse min-w-max">
           <thead>
             <tr>
-              <th className="border-2 border-gray-300 bg-gray-100 px-4 py-2 text-left font-semibold text-gray-900 sticky left-0 z-20">
+              <th className={`border-2 ${isDarkTheme ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-100'} px-4 py-2 text-left font-semibold text-${cardText} sticky left-0 z-20`}>
                 Subject
               </th>
-              <th className="border-2 border-gray-300 bg-gray-100 px-4 py-2 text-left font-semibold text-gray-900 sticky left-0 z-20">
+              <th className={`border-2 ${isDarkTheme ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-100'} px-4 py-2 text-left font-semibold text-${cardText} sticky left-0 z-20`}>
                 Component
               </th>
               {columns.map(col => (
                 <th
                   key={col.id}
-                  className="border-2 border-gray-300 bg-gray-100 px-3 py-2 text-center font-semibold text-gray-900 text-sm min-w-[100px]"
+                  className={`border-2 ${isDarkTheme ? 'border-gray-700 bg-gray-800' : 'border-gray-300 bg-gray-100'} px-3 py-2 text-center font-semibold text-${cardText} text-sm min-w-[100px]`}
                 >
                   <div>{col.year}</div>
-                  <div className="text-xs text-gray-600">
+                  <div className={`text-xs ${isDarkTheme ? 'text-gray-400' : 'text-gray-600'}`}>
                     {col.session === 'm' ? 'Mar' : col.session === 's' ? 'May/Jun' : 'Oct/Nov'}
                   </div>
                 </th>
@@ -178,12 +185,12 @@ export function GridProgressView({ profile, progress, onAddProgress, onUpdatePro
               if (!row) return null;
 
               return (
-                <tr key={`${row.subjectCode}-${row.componentCode}`} className={rowIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="border-2 border-gray-300 px-4 py-3 font-medium text-gray-900 sticky left-0 z-10 bg-inherit">
+                <tr key={`${row.subjectCode}-${row.componentCode}`} className={rowIndex % 2 === 0 ? `bg-${cardBg}` : `${isDarkTheme ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                  <td className={`border-2 ${isDarkTheme ? 'border-gray-700' : 'border-gray-300'} px-4 py-3 font-medium text-${cardText} sticky left-0 z-10 bg-inherit`}>
                     <div>{row.subjectName}</div>
-                    <div className="text-xs text-gray-500">{row.subjectCode}</div>
+                    <div className={`text-xs ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>{row.subjectCode}</div>
                   </td>
-                  <td className="border-2 border-gray-300 px-4 py-3 text-gray-700 font-medium sticky left-0 z-10 bg-inherit">
+                  <td className={`border-2 ${isDarkTheme ? 'border-gray-700' : 'border-gray-300'} px-4 py-3 ${isDarkTheme ? 'text-gray-300' : 'text-gray-700'} font-medium sticky left-0 z-10 bg-inherit`}>
                     {row.componentCode}
                   </td>
                   {columns.map(col => {
@@ -300,7 +307,7 @@ export function GridProgressView({ profile, progress, onAddProgress, onUpdatePro
       </div>
 
       {rows.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
+        <div className={`text-center py-8 ${isDarkTheme ? 'text-gray-400' : 'text-gray-500'}`}>
           No subjects added yet. Add subjects in Settings to start tracking.
         </div>
       )}
