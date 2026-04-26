@@ -10,12 +10,10 @@ interface PendingPapersProps {
 }
 
 export function PendingPapers({ profile, progress, theme }: PendingPapersProps) {
-  // Check if dark theme
   const isDarkTheme = theme?.colors.cardBg === 'gray-900' || theme?.colors.cardBg === 'gray-800' || theme?.colors.cardBg === 'gray-950';
   const cardBg = theme?.colors.cardBg || 'white';
   const cardText = theme?.colors.cardText || 'gray-900';
 
-  // Generate all possible papers for each subject
   const getAllPapers = () => {
     const allPapers: {
       subjectName: string;
@@ -70,7 +68,6 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
   const pendingPapers = allPapers.filter(p => !p.completed);
   const completedPapers = allPapers.filter(p => p.completed);
 
-  // Generate past papers link
   const getPastPaperLink = (
     code: string,
     year: number,
@@ -78,10 +75,8 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
     component: string,
     type: 'qp' | 'ms'
   ) => {
-    // Format: https://pastpapers.papacambridge.com/directories/CAIE/CAIE-pastpapers/upload/{subject-code}_{session}{year}_{qp/ms}_{paper number}.pdf
-    // Example: https://pastpapers.papacambridge.com/directories/CAIE/CAIE-pastpapers/upload/0455_s25_qp_13.pdf
-    const yy = String(year).slice(-2); // Get last 2 digits of year (e.g., 25 from 2025)
-    
+    const yy = String(year).slice(-2);
+
     return `https://pastpapers.papacambridge.com/directories/CAIE/CAIE-pastpapers/upload/${code}_${session}${yy}_${type}_${component}.pdf`;
   };
 
@@ -89,13 +84,11 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
     return session === 'm' ? 'March' : session === 's' ? 'May/June' : 'Oct/Nov';
   };
 
-  // Calculate community average difficulty rating from completed papers
   const getCommunityRating = () => {
     const ratedPapers = progress.filter(p => p.difficulty);
     if (ratedPapers.length === 0) return null;
-    
+
     const avgRating = ratedPapers.reduce((sum, p) => sum + (p.difficulty || 0), 0) / ratedPapers.length;
-    // Ensure the rating is capped at 5.0
     return Math.min(avgRating, 5).toFixed(1);
   };
 
@@ -110,7 +103,6 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
         </p>
       </div>
 
-      {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
@@ -143,7 +135,6 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
         </div>
       </div>
 
-      {/* Community Rating Banner */}
       {communityRating && (
         <div className="bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl p-6 text-white shadow-lg">
           <div className="flex items-center justify-between">
@@ -164,7 +155,6 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
         </div>
       )}
 
-      {/* Pending Papers by Subject */}
       <div className="space-y-6">
         {profile.subjects.map(subject => {
           const subjectPending = pendingPapers.filter(
