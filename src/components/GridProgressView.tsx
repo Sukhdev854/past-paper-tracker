@@ -107,22 +107,41 @@ export function GridProgressView({ profile, progress, onAddProgress, onUpdatePro
     maxMarks: number
   ) => {
     const scoreValue = Number(scoreInput);
-    
+
     if (!scoreInput || isNaN(scoreValue)) {
       setEditingCell(null);
       setScoreInput('');
       return;
     }
-    
+
     // Validate max marks
     if (scoreValue > maxMarks) {
       alert(`Score cannot exceed maximum marks (${maxMarks})`);
       return;
     }
-    
+
     if (scoreValue < 0) {
       alert('Score cannot be negative');
       return;
+    }
+
+    // Check for duplicate entry
+    const existingEntry = getEntry(subjectCode, componentCode, year, session);
+    if (existingEntry) {
+      const subject = getSubjectByCode(subjectCode);
+      const sessionLabel = session === 'm' ? 'March' : session === 's' ? 'May/June' : 'Oct/Nov';
+      const confirmReplace = window.confirm(
+        `You already have an entry for ${subject?.name} - ${componentCode} (${year} ${sessionLabel}).\n\nCurrent score: ${existingEntry.score}/${existingEntry.maxScore}\nNew score: ${scoreValue}/${maxMarks}\n\nDo you want to replace the existing entry?`
+      );
+
+      if (!confirmReplace) {
+        setEditingCell(null);
+        setScoreInput('');
+        return;
+      }
+
+      // Remove the existing entry
+      onUpdateProgress(progress.filter(p => p.id !== existingEntry.id));
     }
 
     const newEntry: ProgressEntry = {
