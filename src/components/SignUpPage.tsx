@@ -25,11 +25,18 @@ export function SignUpPage({ onSignUp }: SignUpPageProps) {
 
   const handleAddSubject = () => {
     if (selectedSubject && selectedComponents.length > 0) {
+      // Check if subject already exists
+      const existingSubject = subjects.find(s => s.code === selectedSubject.code);
+      if (existingSubject) {
+        alert(`${selectedSubject.name} (${selectedSubject.code}) is already added. Please remove it first if you want to change the components or year range.`);
+        return;
+      }
+
       const newSubject: SelectedSubject = {
         name: selectedSubject.name,
         code: selectedSubject.code,
         components: selectedComponents,
-        yearsRange: useSameYears 
+        yearsRange: useSameYears
           ? { from: yearFrom, to: yearTo }
           : { from: subjectYearFrom, to: subjectYearTo },
       };
