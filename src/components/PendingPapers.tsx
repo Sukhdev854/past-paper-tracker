@@ -78,22 +78,11 @@ export function PendingPapers({ profile, progress, theme }: PendingPapersProps) 
     component: string,
     type: 'qp' | 'ms'
   ) => {
-    const level = profile.level === 'IGCSE' ? 'igcse' : 'a-level';
-    const sessionName =
-      session === 'm' ? 'march' : session === 's' ? 'may-june' : 'october-november';
-    const sess = session;
-    const yy = String(year).slice(-2);
+    // Format: https://pastpapers.papacambridge.com/directories/CAIE/CAIE-pastpapers/upload/{subject-code}_{session}{year}_{qp/ms}_{paper number}.pdf
+    // Example: https://pastpapers.papacambridge.com/directories/CAIE/CAIE-pastpapers/upload/0455_s25_qp_13.pdf
+    const yy = String(year).slice(-2); // Get last 2 digits of year (e.g., 25 from 2025)
     
-    // For Feb/March session (m), component codes typically end with 2 digits instead of 3
-    // For example: 12 instead of 13 for other sessions
-    const formattedComponent = session === 'm' && component.length === 2 
-      ? component 
-      : session === 'm' && component.length > 2
-      ? component.slice(0, 2)
-      : component;
-    
-    // Format: https://pastpapers.co/caie/{level}/{subject}-{code}/{year}-{session}/{code}_{sess}{yy}_{qp/ms}_{paper}.pdf
-    return `https://pastpapers.co/caie/${level}/${code}/${year}-${sessionName}/${code}_${sess}${yy}_${type}_${formattedComponent}.pdf`;
+    return `https://pastpapers.papacambridge.com/directories/CAIE/CAIE-pastpapers/upload/${code}_${session}${yy}_${type}_${component}.pdf`;
   };
 
   const getSessionLabel = (session: string) => {
