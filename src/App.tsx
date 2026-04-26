@@ -7,7 +7,7 @@ import { PendingPapers } from './components/PendingPapers';
 import { PredictedGrades } from './components/PredictedGrades';
 import { AuthPage } from './components/AuthPage';
 import { Menu, Home, PlusCircle, Settings, TrendingUp, FileText, Target, LogOut } from 'lucide-react';
-import { THEME_PRESETS, ThemeConfig, getThemeClasses, FONT_OPTIONS } from './data/themes';
+import { THEME_PRESETS, ThemeConfig, getThemeClasses, getThemeRootStyle, FONT_OPTIONS } from './data/themes';
 import { getCurrentSession, signOut, AuthSession } from './utils/localAuth';
 
 type Page = 'auth' | 'signup' | 'dashboard' | 'progress' | 'settings' | 'pending' | 'predicted';
@@ -196,14 +196,19 @@ export default function App() {
     setCurrentPage('signup');
   }
   
-  const isDarkTheme = theme.colors.background.includes('gray-9') || theme.colors.background.includes('black');
+  const isDarkTheme = theme.colors.background.includes('#0') || theme.colors.background.includes('#1');
   const themeClasses = getThemeClasses(theme);
-  const bgClass = theme.colors.background.startsWith('gradient') ? `bg-${theme.colors.background}` : `bg-${theme.colors.background}`;
 
   return (
-    <div className={`min-h-screen ${bgClass} ${themeClasses}`}>
+    <div style={getThemeRootStyle(theme)} className={themeClasses}>
       {profile && (
-        <nav className={`${theme.colors.cardBg === 'white' || theme.colors.cardBg === 'gray-50' ? 'bg-white/80' : 'bg-gray-800/80'} backdrop-blur-md border-b ${isDarkTheme ? 'border-gray-700' : 'border-gray-200'} sticky top-0 z-50 ${theme.effects.shadows ? 'shadow-sm' : ''}`}>
+        <nav
+          style={{
+            background: isDarkTheme ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.8)',
+            borderBottom: `1px solid ${theme.colors.cardBorder}`
+          }}
+          className={`backdrop-blur-md sticky top-0 z-50 ${theme.effects.shadows ? 'shadow-sm' : ''}`}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-3">
@@ -211,20 +216,28 @@ export default function App() {
                   <TrendingUp className={`w-6 h-6 text-white ${theme.effects.glow ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''}`} />
                 </div>
                 <div>
-                  <h1 className={`text-xl font-bold text-${theme.colors.cardText} ${theme.effects.glow ? 'drop-shadow-lg' : ''}`}>
+                  <h1
+                    style={{ color: theme.colors.text }}
+                    className={`text-xl font-bold ${theme.effects.glow ? 'drop-shadow-lg' : ''}`}
+                  >
                     PrepFlow
                   </h1>
-                  <p className="text-xs text-gray-500">Track. Practice. Excel.</p>
+                  <p style={{ color: theme.colors.mutedText }} className="text-xs">Track. Practice. Excel.</p>
                 </div>
               </div>
               
               <div className="flex space-x-1">
                 <button
                   onClick={() => setCurrentPage('dashboard')}
+                  style={currentPage === 'dashboard' ? {
+                    background: `${theme.colors.primary}20`,
+                    color: theme.colors.primary,
+                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
+                  } : {
+                    color: theme.colors.mutedText
+                  }}
                   className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'dashboard'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+                    currentPage !== 'dashboard' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
                   }`}
                 >
                   <Home className="w-4 h-4" />
@@ -233,10 +246,15 @@ export default function App() {
                 
                 <button
                   onClick={() => setCurrentPage('progress')}
+                  style={currentPage === 'progress' ? {
+                    background: `${theme.colors.primary}20`,
+                    color: theme.colors.primary,
+                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
+                  } : {
+                    color: theme.colors.mutedText
+                  }}
                   className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'progress'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+                    currentPage !== 'progress' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
                   }`}
                 >
                   <PlusCircle className="w-4 h-4" />
@@ -245,10 +263,15 @@ export default function App() {
                 
                 <button
                   onClick={() => setCurrentPage('settings')}
+                  style={currentPage === 'settings' ? {
+                    background: `${theme.colors.primary}20`,
+                    color: theme.colors.primary,
+                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
+                  } : {
+                    color: theme.colors.mutedText
+                  }}
                   className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'settings'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+                    currentPage !== 'settings' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
                   }`}
                 >
                   <Settings className="w-4 h-4" />
@@ -257,10 +280,15 @@ export default function App() {
                 
                 <button
                   onClick={() => setCurrentPage('pending')}
+                  style={currentPage === 'pending' ? {
+                    background: `${theme.colors.primary}20`,
+                    color: theme.colors.primary,
+                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
+                  } : {
+                    color: theme.colors.mutedText
+                  }}
                   className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'pending'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+                    currentPage !== 'pending' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -269,10 +297,15 @@ export default function App() {
                 
                 <button
                   onClick={() => setCurrentPage('predicted')}
+                  style={currentPage === 'predicted' ? {
+                    background: `${theme.colors.primary}20`,
+                    color: theme.colors.primary,
+                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
+                  } : {
+                    color: theme.colors.mutedText
+                  }}
                   className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage === 'predicted'
-                      ? `bg-${theme.colors.primary}-100 text-${theme.colors.primary}-700 ${theme.effects.glow ? 'shadow-[0_0_15px_rgba(99,102,241,0.3)]' : ''}`
-                      : `${isDarkTheme ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`
+                    currentPage !== 'predicted' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
                   }`}
                 >
                   <Target className="w-4 h-4" />
@@ -327,7 +360,7 @@ export default function App() {
 
       {/* Footer */}
       {currentPage !== 'auth' && (
-        <footer className="py-6 text-center text-sm text-gray-500">
+        <footer className="py-6 text-center text-sm" style={{ color: theme.colors.mutedText }}>
           <p>Copyright 2026 Sukhdev Saxena</p>
         </footer>
       )}
