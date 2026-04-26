@@ -46,6 +46,29 @@ export function ProgressRecorder({ profile, progress, onAddProgress, onUpdatePro
       return;
     }
 
+    // Check for duplicate entry
+    const existingEntry = progress.find(
+      p =>
+        p.subjectCode === selectedSubjectCode &&
+        p.component === selectedComponent &&
+        p.year === selectedYear &&
+        p.session === selectedSession
+    );
+
+    if (existingEntry) {
+      const sessionLabel = selectedSession === 'm' ? 'March' : selectedSession === 's' ? 'May/June' : 'Oct/Nov';
+      const confirmReplace = window.confirm(
+        `You already have an entry for ${subject.name} - ${selectedComponent} (${selectedYear} ${sessionLabel}).\n\nCurrent score: ${existingEntry.score}/${existingEntry.maxScore}\nNew score: ${scoreValue}/${component.maxMarks}\n\nDo you want to replace the existing entry?`
+      );
+
+      if (!confirmReplace) {
+        return;
+      }
+
+      // Remove the existing entry
+      onUpdateProgress(progress.filter(p => p.id !== existingEntry.id));
+    }
+
     const newEntry: ProgressEntry = {
       id: `${Date.now()}-${Math.random()}`,
       subjectCode: selectedSubjectCode,
