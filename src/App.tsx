@@ -1,16 +1,28 @@
 import { useState, useEffect } from 'react';
-import { SignUpPage } from './components/SignUpPage';
-import { Dashboard } from './components/EnhancedDashboard';
-import { ProgressRecorder } from './components/ProgressRecorder';
-import { SettingsPage } from './components/SettingsPage';
-import { PendingPapers } from './components/PendingPapers';
-import { PredictedGrades } from './components/PredictedGrades';
-import { AuthPage } from './components/AuthPage';
-import { Menu, Home, PlusCircle, Settings, TrendingUp, FileText, Target, LogOut } from 'lucide-react';
-import { THEME_PRESETS, ThemeConfig, getThemeClasses, getThemeRootStyle, FONT_OPTIONS } from './data/themes';
 import { getCurrentSession, signOut, AuthSession } from './utils/localAuth';
+import { PremiumAuthPage } from './components/PremiumAuthPage';
+import { PremiumOnboarding } from './components/PremiumOnboarding';
+import { PremiumDashboard } from './components/PremiumDashboard';
+import { PremiumProgressRecorder } from './components/PremiumProgressRecorder';
+import { PremiumPendingPapers } from './components/PremiumPendingPapers';
+import { PredictedGrades } from './components/PredictedGrades';
+import { SettingsPage } from './components/SettingsPage';
+import { Sidebar } from './components/Sidebar';
+import { AnimatedBackground } from './components/AnimatedBackground';
+import { AchievementToast } from './components/AchievementToast';
+import { Confetti } from './components/Confetti';
+import { PREMIUM_THEME } from './data/premiumTheme';
+import {
+  GamificationData,
+  initializeGamification,
+  checkNewAchievements,
+  getXpForPaper,
+  calculateStreak,
+  calculateLevel,
+  ACHIEVEMENTS,
+} from './utils/gamification';
 
-type Page = 'auth' | 'signup' | 'dashboard' | 'progress' | 'settings' | 'pending' | 'predicted';
+type Page = 'dashboard' | 'progress' | 'settings' | 'pending' | 'predicted';
 
 export interface StudentProfile {
   name: string;
@@ -37,17 +49,20 @@ export interface ProgressEntry {
   maxScore: number;
   date: string;
   status?: 'done' | 'in-progress' | 'to-mark' | 'to-review' | 'not-started';
-  difficulty?: 1 | 2 | 3 | 4 | 5; // 1 = very easy, 5 = very hard
+  difficulty?: 1 | 2 | 3 | 4 | 5;
 }
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<Page>('auth');
+  const [currentPage, setCurrentPage] = useState<Page>('dashboard');
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   const [progress, setProgress] = useState<ProgressEntry[]>([]);
-  const [theme, setTheme] = useState<ThemeConfig>(THEME_PRESETS.default);
   const [user, setUser] = useState<any>(null);
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [gamification, setGamification] = useState<GamificationData>(initializeGamification());
+  const [showAchievement, setShowAchievement] = useState<typeof ACHIEVEMENTS[keyof typeof ACHIEVEMENTS] | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   // Check for existing session
   useEffect(() => {
@@ -56,8 +71,6 @@ export default function App() {
       if (currentSession) {
         setUser({ id: currentSession.userId, username: currentSession.username });
         setSession(currentSession);
-        
-        // Load user data from localStorage
         loadUserData(currentSession.userId);
         setCurrentPage('dashboard');
       }
@@ -68,25 +81,22 @@ export default function App() {
 
   const loadUserData = (userId: string) => {
     try {
-      // Load profile from localStorage (scoped to user)
       const savedProfile = localStorage.getItem(`prepflow_profile_${userId}`);
       if (savedProfile) {
         setProfile(JSON.parse(savedProfile));
         setCurrentPage('dashboard');
-      } else {
-        setCurrentPage('signup');
       }
 
-      // Load progress from localStorage (scoped to user)
       const savedProgress = localStorage.getItem(`prepflow_progress_${userId}`);
       if (savedProgress) {
         setProgress(JSON.parse(savedProgress));
       }
 
-      // Load theme from localStorage (themes are still local preference)
-      const savedTheme = localStorage.getItem('appTheme');
-      if (savedTheme) {
-        setTheme(JSON.parse(savedTheme));
+      const savedGamification = localStorage.getItem(`prepflow_gamification_${userId}`);
+      if (savedGamification) {
+        setGamification(JSON.parse(savedGamification));
+      } else {
+        setGamification(initializeGamification());
       }
     } catch (error) {
       console.error('Error loading user data:', error);
@@ -96,8 +106,6 @@ export default function App() {
   const handleAuthSuccess = (authSession: AuthSession) => {
     setUser({ id: authSession.userId, username: authSession.username });
     setSession(authSession);
-    
-    // Load user data
     loadUserData(authSession.userId);
   };
 
@@ -107,43 +115,9 @@ export default function App() {
     setSession(null);
     setProfile(null);
     setProgress([]);
-    setCurrentPage('auth');
+    setGamification(initializeGamification());
+    setCurrentPage('dashboard');
   };
-
-  // Load Google Fonts
-  useEffect(() => {
-    const fontOption = FONT_OPTIONS.find(f => f.value === theme.font);
-    if (fontOption && fontOption.import) {
-      const linkId = 'google-font-link';
-      let link = document.getElementById(linkId) as HTMLLinkElement;
-      
-      if (!link) {
-        link = document.createElement('link');
-        link.id = linkId;
-        link.rel = 'stylesheet';
-        document.head.appendChild(link);
-      }
-      
-      link.href = `https://fonts.googleapis.com/css2?family=${fontOption.import}&display=swap`;
-    }
-  }, [theme.font]);
-
-  // Save data to localStorage (scoped to user)
-  useEffect(() => {
-    if (profile && user) {
-      localStorage.setItem(`prepflow_profile_${user.id}`, JSON.stringify(profile));
-    }
-  }, [profile, user]);
-
-  useEffect(() => {
-    if (user && progress.length > 0) {
-      localStorage.setItem(`prepflow_progress_${user.id}`, JSON.stringify(progress));
-    }
-  }, [progress, user]);
-  
-  useEffect(() => {
-    localStorage.setItem('appTheme', JSON.stringify(theme));
-  }, [theme]);
 
   const handleSignUp = (newProfile: StudentProfile) => {
     setProfile(newProfile);
@@ -154,17 +128,79 @@ export default function App() {
   };
 
   const handleAddProgress = (entry: ProgressEntry) => {
-    const newProgress = [...progress, entry];
+    const newProgress = [...progress.filter(p => p.id !== entry.id), entry];
     setProgress(newProgress);
+
     if (user) {
       localStorage.setItem(`prepflow_progress_${user.id}`, JSON.stringify(newProgress));
     }
+
+    // Update gamification
+    updateGamification(entry, newProgress);
   };
 
-  const handleUpdateProgress = (entries: ProgressEntry[]) => {
-    setProgress(entries);
+  const updateGamification = (latestEntry: ProgressEntry, allProgress: ProgressEntry[]) => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastStudyDate = gamification.lastStudyDate.split('T')[0];
+
+    let newStreak = gamification.streak;
+
+    // Update streak
+    if (today !== lastStudyDate) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      if (lastStudyDate === yesterdayStr) {
+        newStreak += 1;
+      } else if (lastStudyDate === today) {
+        newStreak = gamification.streak;
+      } else {
+        newStreak = 1;
+      }
+    }
+
+    // Calculate XP for this paper
+    const paperXp = getXpForPaper(latestEntry.score, latestEntry.maxScore);
+
+    // Count high scores
+    const highScores = allProgress.filter(p => (p.score / p.maxScore) * 100 >= 90).length;
+
+    // Check for new achievements
+    const { newAchievements, newXp: achievementXp } = checkNewAchievements(
+      gamification,
+      allProgress.length,
+      newStreak,
+      latestEntry.score,
+      latestEntry.maxScore,
+      highScores
+    );
+
+    const totalNewXp = paperXp + achievementXp;
+    const updatedXp = gamification.xp + totalNewXp;
+    const newLevel = calculateLevel(updatedXp);
+
+    const updatedGamification: GamificationData = {
+      xp: updatedXp,
+      level: newLevel,
+      streak: newStreak,
+      lastStudyDate: new Date().toISOString(),
+      totalPapersCompleted: allProgress.length,
+      achievements: [
+        ...gamification.achievements,
+        ...newAchievements.map(a => a.id),
+      ],
+    };
+
+    setGamification(updatedGamification);
+
     if (user) {
-      localStorage.setItem(`prepflow_progress_${user.id}`, JSON.stringify(entries));
+      localStorage.setItem(`prepflow_gamification_${user.id}`, JSON.stringify(updatedGamification));
+    }
+
+    // Show achievement toast
+    if (newAchievements.length > 0) {
+      setShowAchievement(newAchievements[0]);
     }
   };
 
@@ -174,196 +210,112 @@ export default function App() {
       localStorage.setItem(`prepflow_profile_${user.id}`, JSON.stringify(newProfile));
     }
   };
-  
-  const handleUpdateTheme = (newTheme: ThemeConfig) => {
-    setTheme(newTheme);
-  };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center">
-        <div className="text-white text-center">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-2xl mb-4">
-            <TrendingUp className="w-12 h-12 text-indigo-600" />
+      <div
+        style={{ background: PREMIUM_THEME.colors.bgPrimary }}
+        className="min-h-screen flex items-center justify-center"
+      >
+        <div className="text-center">
+          <div
+            style={{ background: PREMIUM_THEME.effects.gradientMixed }}
+            className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-4 animate-pulse"
+          >
+            <div className="text-4xl">📊</div>
           </div>
-          <h1 className="text-2xl font-bold">Loading PrepFlow...</h1>
+          <h1 style={{ color: PREMIUM_THEME.colors.textPrimary }} className="text-2xl font-bold">
+            Loading PrepFlow...
+          </h1>
         </div>
       </div>
     );
   }
 
-  if (!profile && currentPage !== 'signup' && currentPage !== 'auth') {
-    setCurrentPage('signup');
+  // Auth page
+  if (!user || !session) {
+    return <PremiumAuthPage onAuthSuccess={handleAuthSuccess} />;
   }
-  
-  const isDarkTheme = theme.colors.background.includes('#0') || theme.colors.background.includes('#1');
-  const themeClasses = getThemeClasses(theme);
+
+  // Onboarding
+  if (!profile) {
+    return <PremiumOnboarding onComplete={handleSignUp} />;
+  }
 
   return (
-    <div style={getThemeRootStyle(theme)} className={themeClasses}>
-      {profile && (
-        <nav
-          style={{
-            background: isDarkTheme ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.8)',
-            borderBottom: `1px solid ${theme.colors.cardBorder}`
-          }}
-          className={`backdrop-blur-md sticky top-0 z-50 ${theme.effects.shadows ? 'shadow-sm' : ''}`}
-        >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
-                  <TrendingUp className={`w-6 h-6 text-white ${theme.effects.glow ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]' : ''}`} />
-                </div>
-                <div>
-                  <h1
-                    style={{ color: theme.colors.text }}
-                    className={`text-xl font-bold ${theme.effects.glow ? 'drop-shadow-lg' : ''}`}
-                  >
-                    PrepFlow
-                  </h1>
-                  <p style={{ color: theme.colors.mutedText }} className="text-xs">Track. Practice. Excel.</p>
-                </div>
-              </div>
-              
-              <div className="flex space-x-1">
-                <button
-                  onClick={() => setCurrentPage('dashboard')}
-                  style={currentPage === 'dashboard' ? {
-                    background: `${theme.colors.primary}20`,
-                    color: theme.colors.primary,
-                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
-                  } : {
-                    color: theme.colors.mutedText
-                  }}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage !== 'dashboard' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
-                  }`}
-                >
-                  <Home className="w-4 h-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('progress')}
-                  style={currentPage === 'progress' ? {
-                    background: `${theme.colors.primary}20`,
-                    color: theme.colors.primary,
-                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
-                  } : {
-                    color: theme.colors.mutedText
-                  }}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage !== 'progress' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
-                  }`}
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  <span className="hidden sm:inline">Record Progress</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('settings')}
-                  style={currentPage === 'settings' ? {
-                    background: `${theme.colors.primary}20`,
-                    color: theme.colors.primary,
-                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
-                  } : {
-                    color: theme.colors.mutedText
-                  }}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage !== 'settings' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
-                  }`}
-                >
-                  <Settings className="w-4 h-4" />
-                  <span className="hidden sm:inline">Settings</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('pending')}
-                  style={currentPage === 'pending' ? {
-                    background: `${theme.colors.primary}20`,
-                    color: theme.colors.primary,
-                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
-                  } : {
-                    color: theme.colors.mutedText
-                  }}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage !== 'pending' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
-                  }`}
-                >
-                  <FileText className="w-4 h-4" />
-                  <span className="hidden sm:inline">Pending Papers</span>
-                </button>
-                
-                <button
-                  onClick={() => setCurrentPage('predicted')}
-                  style={currentPage === 'predicted' ? {
-                    background: `${theme.colors.primary}20`,
-                    color: theme.colors.primary,
-                    boxShadow: theme.effects.glow ? `0 0 15px ${theme.effects.shadowColor}` : undefined
-                  } : {
-                    color: theme.colors.mutedText
-                  }}
-                  className={`px-4 py-2 ${theme.effects.borders === 'rounded' ? 'rounded-lg' : ''} flex items-center space-x-2 ${theme.effects.animations ? 'transition-all' : ''} ${
-                    currentPage !== 'predicted' ? (isDarkTheme ? 'hover:bg-gray-700' : 'hover:bg-gray-100') : ''
-                  }`}
-                >
-                  <Target className="w-4 h-4" />
-                  <span className="hidden sm:inline">Predicted Grades</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-      )}
+    <div style={{ background: PREMIUM_THEME.colors.bgPrimary }} className="min-h-screen">
+      <AnimatedBackground />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {currentPage === 'auth' && <AuthPage onAuthSuccess={handleAuthSuccess} />}
-        {currentPage === 'signup' && <SignUpPage onSignUp={handleSignUp} />}
-        {currentPage === 'dashboard' && profile && (
-          <Dashboard profile={profile} progress={progress} theme={theme} />
+      {/* Sidebar */}
+      <Sidebar
+        currentPage={currentPage}
+        onNavigate={setCurrentPage}
+        userName={user?.username || session?.username || profile.name}
+        onLogout={handleLogout}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+        streak={gamification.streak}
+      />
+
+      {/* Main Content */}
+      <main
+        style={{
+          marginLeft: sidebarCollapsed ? '80px' : '280px',
+          transition: PREMIUM_THEME.animations.transition,
+        }}
+        className="p-8"
+      >
+        {currentPage === 'dashboard' && (
+          <PremiumDashboard
+            profile={profile}
+            progress={progress}
+            gamification={gamification}
+          />
         )}
-        {currentPage === 'progress' && profile && (
-          <ProgressRecorder
+        {currentPage === 'progress' && (
+          <PremiumProgressRecorder
             profile={profile}
             progress={progress}
             onAddProgress={handleAddProgress}
-            onUpdateProgress={handleUpdateProgress}
-            theme={theme}
+            onShowConfetti={() => setShowConfetti(true)}
           />
         )}
-        {currentPage === 'settings' && profile && (
-          <SettingsPage 
-            profile={profile} 
+        {currentPage === 'pending' && (
+          <PremiumPendingPapers
+            profile={profile}
+            progress={progress}
+          />
+        )}
+        {currentPage === 'predicted' && (
+          <PredictedGrades
+            profile={profile}
+            progress={progress}
+            theme={{ colors: PREMIUM_THEME.colors } as any}
+          />
+        )}
+        {currentPage === 'settings' && (
+          <SettingsPage
+            profile={profile}
             onUpdateProfile={handleUpdateProfile}
-            theme={theme}
-            onUpdateTheme={handleUpdateTheme}
+            theme={{ colors: PREMIUM_THEME.colors } as any}
+            onUpdateTheme={() => {}}
             onLogout={handleLogout}
             userName={user?.username || session?.username || profile.name}
           />
         )}
-        {currentPage === 'pending' && profile && (
-          <PendingPapers
-            profile={profile}
-            progress={progress}
-            theme={theme}
-          />
-        )}
-        {currentPage === 'predicted' && profile && (
-          <PredictedGrades
-            profile={profile}
-            progress={progress}
-            theme={theme}
-          />
-        )}
       </main>
 
-      {/* Footer */}
-      {currentPage !== 'auth' && (
-        <footer className="py-6 text-center text-sm" style={{ color: theme.colors.mutedText }}>
-          <p>Copyright 2026 Sukhdev Saxena</p>
-        </footer>
+      {/* Achievement Toast */}
+      {showAchievement && (
+        <AchievementToast
+          achievement={showAchievement}
+          onClose={() => setShowAchievement(null)}
+        />
       )}
+
+      {/* Confetti */}
+      {showConfetti && <Confetti />}
+      {showConfetti && setTimeout(() => setShowConfetti(false), 3000)}
     </div>
   );
 }
